@@ -55,12 +55,7 @@ connect(Node, Port) when is_atom(Node) ->
 
 -spec listen(inet:port_number()) -> {ok, port()} | {error, term()}.
 listen(Port) when is_integer(Port) ->
-    case gen_tcp:listen(Port, ?TCP_DEFAULT_OPTS) of
-         {ok, Socket} ->
-           ok = set_socket_reuseport(os:type(), Socket),
-           {ok, Socket};
-         {error, Reason} -> {error, Reason}
-    end.
+    gen_tcp:listen(Port, get_listen_opts(os:type())).
 
 -spec accept(port()) -> ok | {error, term()}.
 accept(Socket) when is_port(Socket) ->
@@ -228,13 +223,11 @@ set_socket_keepalive({unix, linux}, Socket) ->
 set_socket_keepalive(_Unsupported, _Socket) ->
     ok.
 
-set_socket_reuseport({unix, darwin}, Socket) ->
-    ok = inet:setopts(Socket, [{raw, ?DARWIN_SOL_SOCKET, ?DARWIN_SO_REUSEPORT, <<1:32/native>>}]),
-    ok;
+get_listen_opts({unix, darwin}) ->
+    ?TCP_DEFAULT_OPTS ++ [{raw, ?DARWIN_SOL_SOCKET, ?DARWIN_SO_REUSEPORT, <<1:32/native>>}];
 
-set_socket_reuseport({unix, linux}, Socket) ->
-    ok = inet:setopts(Socket, [{raw, ?LINUX_SOL_SOCKET, ?LINUX_SO_REUSEPORT, <<1:32/native>>}]),
-    ok;
+get_listen_opts({unix, linux}) ->
+    ?TCP_DEFAULT_OPTS ++ [{raw, ?LINUX_SOL_SOCKET, ?LINUX_SO_REUSEPORT, <<1:32/native>>}];
 
-set_socket_reuseport(_Unsupported, _Socket) ->
-    ok.
+get_listen_opts(_Unsupported) ->
+    ?TCP_DEFAULT_OPTS.
