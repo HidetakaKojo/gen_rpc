@@ -55,7 +55,7 @@ connect(Node, Port) when is_atom(Node) ->
 
 -spec listen(inet:port_number()) -> {ok, port()} | {error, term()}.
 listen(Port) when is_integer(Port) ->
-    case gen_tcp:listen(Port, ?TCP_DEFAULT_OPTS) do
+    case gen_tcp:listen(Port, ?TCP_DEFAULT_OPTS) of
          {ok, Socket} ->
            ok = set_socket_reuseport(os:type(), Socket),
            {ok, Socket};
@@ -232,9 +232,9 @@ set_socket_reuseport({unix, darwin}, Socket) ->
     ok = inet:setopts(Socket, [{raw, ?DARWIN_SOL_SOCKET, ?DARWIN_SO_REUSEPORT, <<1:32/native>>}]),
     ok;
 
-set_socket_reuseport({unix, darwin}, Socket) ->
+set_socket_reuseport({unix, linux}, Socket) ->
     ok = inet:setopts(Socket, [{raw, ?LINUX_SOL_SOCKET, ?LINUX_SO_REUSEPORT, <<1:32/native>>}]),
     ok;
 
-set_socket_reuseport(_Unsupported, Socket) ->
+set_socket_reuseport(_Unsupported, _Socket) ->
     ok.
