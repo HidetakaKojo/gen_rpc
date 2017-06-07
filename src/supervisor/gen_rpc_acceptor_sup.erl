@@ -51,5 +51,5 @@ stop_child(Pid) when is_pid(Pid) ->
 %%% ===================================================
 init([]) ->
     {ok, {{simple_one_for_one, 100, 1}, [
-        {gen_rpc_acceptor, {gen_rpc_acceptor,start_link,[]}, temporary, 5000, worker, [gen_rpc_acceptor]}
+        {gen_rpc_acceptor, {gen_rpc_acceptor,start_link,[]}, temporary, 15000, worker, [gen_rpc_acceptor]}
     ]}}.
